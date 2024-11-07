@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Downloader API</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; color: #333; }
+        .endpoint { background: #f4f4f4; padding: 10px; margin: 10px 0; border-left: 4px solid #333; }
+        .code { font-family: monospace; background: #eaeaea; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>YouTube Downloader API Documentation</h1>
+    <p>Welcome to the YouTube Downloader API! Below are the available endpoints to download audio and video from YouTube.</p>
+
+    <div class="endpoint">
+        <h2>Download Audio</h2>
+        <p>Endpoint: <span class="code">/download/audio</span></p>
+        <p><strong>Query Parameters:</strong></p>
+        <ul>
+            <li><span class="code">url</span> (required): The URL of the YouTube video</li>
+        </ul>
+        <p><strong>Example:</strong> <span class="code">/download/audio?url=https://www.youtube.com/watch?v=YOUR_VIDEO_ID</span></p>
+    </div>
+
+    <div class="endpoint">
+        <h2>Download Video</h2>
+        <p>Endpoint: <span class="code">/download/video</span></p>
+        <p><strong>Query Parameters:</strong></p>
+        <ul>
+            <li><span class="code">url</span> (required): The URL of the YouTube video</li>
+        </ul>
+        <p><strong>Example:</strong> <span class="code">/download/video?url=https://www.youtube.com/watch?v=YOUR_VIDEO_ID</span></p>
+    </div>
+</body>
+</html>
