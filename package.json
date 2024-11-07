@@ -1,21 +1,15 @@
 {
-  "name": "my-youtube-downloader",
+  "name": "youtube-downloader-api",
   "version": "1.0.0",
-  "description": "A simple API to download YouTube videos and audio.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js" // Optional: For development with nodemon
+    "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.17.3",
+    "express": "^4.17.1",
     "ytdl-core": "^4.9.1"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.15" // Optional: For development
   },
   "engines": {
     "node": ">=14.x"
-  },
-  "license": "MIT"
+  }
 }
