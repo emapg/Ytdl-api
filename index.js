@@ -1,6 +1,7 @@
 const express = require('express');
 const ytdl = require('ytdl-core');
 const ytpl = require('ytpl');
+const ytsr = require('ytsr');
 const cors = require('cors');
 const path = require('path');
 const app = express();
@@ -18,7 +19,7 @@ app.get('/download', async (req, res) => {
   const url = req.query.url;
   const format = req.query.format || 'mp4';
 
-  if (!ytdl.validateURL(url)) {
+  if (!ytdl.validateID(url) && !ytpl.validateID(url) && !url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/)) {
     return res.status(400).send('Invalid URL');
   }
 
@@ -67,7 +68,7 @@ app.get('/playlist', async (req, res) => {
 app.get('/thumbnail', async (req, res) => {
   const url = req.query.url;
 
-  if (!ytdl.validateURL(url)) {
+  if (!ytdl.validateID(url) && !ytpl.validateID(url) && !url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/)) {
     return res.status(400).send('Invalid URL');
   }
 
@@ -82,7 +83,7 @@ app.get('/thumbnail', async (req, res) => {
 app.get('/metadata', async (req, res) => {
   const url = req.query.url;
 
-  if (!ytdl.validateURL(url)) {
+  if (!ytdl.validateID(url) && !ytpl.validateID(url) && !url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/)) {
     return res.status(400).send('Invalid URL');
   }
 
@@ -95,6 +96,28 @@ app.get('/metadata', async (req, res) => {
     });
   } catch (error) {
     res.status(500).send('Error retrieving metadata');
+  }
+});
+
+app.get('/search', async (req, res) => {
+  const query = req.query.query;
+
+  if (!query) {
+    return res.status(400).send('Search query is required');
+  }
+
+  try {
+    const searchResults = await ytsr(query, { limit: 10 });
+    res.json(searchResults.items
+      .filter(item => item.type === 'video')
+      .map(video => ({
+        title: video.title,
+        url: video.url,
+        thumbnail: video.bestThumbnail.url
+      }))
+    );
+  } catch (error) {
+    res.status(500).send('Error retrieving search results');
   }
 });
 
