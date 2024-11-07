@@ -43,8 +43,16 @@ app.get('/download', async (req, res) => {
     options.quality = 'highestvideo';
   }
 
-  res.header('Content-Disposition', `attachment; filename="video.${format === 'audio' ? 'mp3' : 'mp4'}"`);
-  ytdl(url, options).pipe(res);
+  try {
+    const info = await ytdl.getInfo(url);
+    const formatInfo = ytdl.chooseFormat(info.formats, options);
+    if (!formatInfo.url) {
+      return res.status(500).send('Unable to retrieve download link');
+    }
+    res.redirect(formatInfo.url);
+  } catch (error) {
+    res.status(500).send('Error processing download');
+  }
 });
 
 app.get('/playlist', async (req, res) => {
