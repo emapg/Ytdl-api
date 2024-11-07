@@ -45,13 +45,12 @@
     button:hover {
       background-color: #218838;
     }
-    .metadata, .progress {
+    .metadata, .formats, .progress {
       margin: 20px 0;
       padding: 10px;
       background: #fff;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      display: none;
     }
     .progress-bar {
       width: 0;
@@ -75,21 +74,15 @@
   <form id="downloadForm">
     <label for="url">YouTube URL:</label>
     <input type="text" id="url" name="url" required>
-    <label for="format">Format:</label>
-    <select id="format" name="format">
-      <option value="mp4">MP4 (Highest Quality)</option>
-      <option value="audio">MP3 (Audio Only)</option>
-      <option value="360p">360p</option>
-      <option value="480p">480p</option>
-      <option value="720p">720p (HD)</option>
-      <option value="1080p">1080p (Full HD)</option>
-      <option value="1440p">1440p (2K)</option>
-      <option value="2160p">2160p (4K)</option>
-    </select>
-    <button type="submit">Download</button>
+    <button type="button" id="getFormats">Get Formats</button>
   </form>
   <div class="metadata" id="metadata"></div>
-  <div class="progress" id="progress">
+  <div class="formats" id="formats" style="display: none;">
+    <label for="format">Available Formats:</label>
+    <select id="format" name="format"></select>
+    <button type="button" id="downloadButton">Download</button>
+  </div>
+  <div class="progress" id="progress" style="display: none;">
     <p>Download Progress: <span id="progressValue">0</span>%</p>
     <div class="progress-bar" id="progressBar"></div>
   </div>
@@ -101,7 +94,7 @@
     <p><strong>Parameters:</strong></p>
     <ul>
       <li><code>url</code>: YouTube video URL (required)</li>
-      <li><code>format</code>: Desired format (e.g., mp4, audio, 360p, 480p, 720p, 1080p, 1440p, 2160p) (optional, default: mp4)</li>
+      <li><code>format</code>: Desired format (e.g., mp4, audio, 360p, 480p, 720p, 1080p, 1440p, 2160p) (required)</li>
     </ul>
     <h3>Get Video Metadata</h3>
     <p><strong>Endpoint:</strong> <code>/metadata</code></p>
@@ -121,10 +114,8 @@
   <div class="search-result" id="searchResult"></div>
 
   <script>
-    document.getElementById('downloadForm').addEventListener('submit', function(event) {
-      event.preventDefault();
+    document.getElementById('getFormats').addEventListener('click', function() {
       const url = document.getElementById('url').value;
-      const format = document.getElementById('format').value;
 
       fetch(`/metadata?url=${encodeURIComponent(url)}`)
         .then(response => response.json())
@@ -137,38 +128,26 @@
             <p><strong>Length:</strong> ${data.length} seconds</p>
             <p><strong>Description:</strong> ${data.description}</p>
           `;
+
+          fetch(`/formats?url=${encodeURIComponent(url)}`)
+            .then(response => response.json())
+            .then(formats => {
+              const formatsSelect = document.getElementById('format');
+              formatsSelect.innerHTML = formats.map(format => `
+                <option value="${format.itag}">${format.qualityLabel || format.audioBitrate} - ${format.container}</option>
+              `).join('');
+              document.getElementById('formats').style.display = 'block';
+            })
+            .catch(error => console.error('Error fetching formats:', error));
         })
         .catch(error => console.error('Error fetching metadata:', error));
-      
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', `/download?url=${encodeURIComponent(url)}&format=${format}`, true);
-      xhr.responseType = 'blob';
+    });
 
-      xhr.onprogress = function(event) {
-        if (event.lengthComputable) {
-          const percentComplete = (event.loaded / event.total) * 100;
-          document.getElementById('progress').style.display = 'block';
-          document.getElementById('progressValue').textContent = Math.round(percentComplete);
-          document.getElementById('progressBar').style.width = percentComplete + '%';
-        }
-      };
+    document.getElementById('downloadButton').addEventListener('click', function() {
+      const url = document.getElementById('url').value;
+      const itag = document.getElementById('format').value;
 
-      xhr.onload = function(event) {
-        if (xhr.status === 200) {
-          const blob = new Blob([xhr.response], { type: xhr.getResponseHeader('Content-Type') });
-          const link = document.createElement('a');
-          link.href = window.URL.createObjectURL(blob);
-          link.download = xhr.getResponseHeader('Content-Disposition').split('filename=')[1];
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          document.getElementById('progress').style.display = 'none';
-          document.getElementById('progressValue').textContent = '0';
-          document.getElementById('progressBar').style.width = '0';
-        }
-      };
-
-      xhr.send();
+      window.location.href = `/download?url=${encodeURIComponent(url)}&itag=${itag}`;
     });
 
     document.getElementById('url').addEventListener('input', function() {
