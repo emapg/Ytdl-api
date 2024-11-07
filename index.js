@@ -15,37 +15,36 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/download', async (req, res) => {
+app.get('/formats', async (req, res) => {
   const url = req.query.url;
-  const format = req.query.format || 'mp4';
 
-  if (!ytdl.validateID(url) && !ytpl.validateID(url) && !url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/)) {
+  if (!ytdl.validateID(url) && !url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/)) {
     return res.status(400).send('Invalid URL');
-  }
-
-  const options = {};
-  if (format === 'audio') {
-    options.filter = 'audioonly';
-    options.quality = 'highestaudio';
-  } else if (format === '360p') {
-    options.quality = '18'; // 360p
-  } else if (format === '480p') {
-    options.quality = '135'; // 480p
-  } else if (format === '720p') {
-    options.quality = '22'; // 720p
-  } else if (format === '1080p') {
-    options.quality = '37'; // 1080p
-  } else if (format === '1440p') {
-    options.quality = '271'; // 1440p
-  } else if (format === '2160p') {
-    options.quality = '313'; // 2160p
-  } else {
-    options.quality = 'highestvideo';
   }
 
   try {
     const info = await ytdl.getInfo(url);
-    const formatInfo = ytdl.chooseFormat(info.formats, options);
+    res.json(info.formats);
+  } catch (error) {
+    res.status(500).send('Error retrieving formats');
+  }
+});
+
+app.get('/download', async (req, res) => {
+  const url = req.query.url;
+  const itag = req.query.itag;
+
+  if (!ytdl.validateID(url) && !url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/)) {
+    return res.status(400).send('Invalid URL');
+  }
+
+  if (!itag) {
+    return res.status(400).send('Format (itag) is required');
+  }
+
+  try {
+    const info = await ytdl.getInfo(url);
+    const formatInfo = ytdl.chooseFormat(info.formats, { quality: itag });
     if (!formatInfo.url) {
       return res.status(500).send('Unable to retrieve download link');
     }
