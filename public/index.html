@@ -58,9 +58,13 @@
       height: 20px;
       background-color: #28a745;
     }
-    .api-docs {
+    .api-docs, .search-result {
       margin: 20px auto;
       max-width: 600px;
+    }
+    .video-thumbnail {
+      width: 100%;
+      max-width: 300px;
     }
   </style>
 </head>
@@ -106,7 +110,15 @@
     <ul>
       <li><code>url</code>: YouTube video URL (required)</li>
     </ul>
+    <h3>Search Videos</h3>
+    <p><strong>Endpoint:</strong> <code>/search</code></p>
+    <p><strong>Method:</strong> GET</p>
+    <p><strong>Parameters:</strong></p>
+    <ul>
+      <li><code>query</code>: Search query (required)</li>
+    </ul>
   </div>
+  <div class="search-result" id="searchResult"></div>
 
   <script>
     document.getElementById('downloadForm').addEventListener('submit', function(event) {
@@ -157,6 +169,28 @@
       };
 
       xhr.send();
+    });
+
+    document.getElementById('url').addEventListener('input', function() {
+      const query = document.getElementById('url').value;
+      if (query.trim()) {
+        fetch(`/search?query=${encodeURIComponent(query)}`)
+          .then(response => response.json())
+          .then(data => {
+            const searchResultDiv = document.getElementById('searchResult');
+            searchResultDiv.innerHTML = '<h2>Search Results</h2>';
+            data.forEach(video => {
+              searchResultDiv.innerHTML += `
+                <div>
+                  <h3>${video.title}</h3>
+                  <img src="${video.thumbnail}" alt="Thumbnail" class="video-thumbnail">
+                  <p><a href="${video.url}" target="_blank">Watch on YouTube</a></p>
+                </div>
+              `;
+            });
+          })
+          .catch(error => console.error('Error fetching search results:', error));
+      }
     });
   </script>
 </body>
