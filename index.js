@@ -3,9 +3,12 @@ const ytdl = require('ytdl-core');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Audio download route
 app.get('/download/audio', async (req, res) => {
     const url = req.query.url;
-    if (!url) return res.status(400).send('URL is required');
+    if (!url) {
+        return res.status(400).send('URL is required');
+    }
 
     try {
         const info = await ytdl.getInfo(url);
@@ -17,9 +20,12 @@ app.get('/download/audio', async (req, res) => {
     }
 });
 
+// Video download route
 app.get('/download/video', async (req, res) => {
     const url = req.query.url;
-    if (!url) return res.status(400).send('URL is required');
+    if (!url) {
+        return res.status(400).send('URL is required');
+    }
 
     try {
         const info = await ytdl.getInfo(url);
